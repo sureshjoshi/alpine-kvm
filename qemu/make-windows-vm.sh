@@ -63,12 +63,13 @@ virt-install \
     --network network=default,model=virtio \
     --osinfo win10 \
     --vcpus $CPUS \
-    --virt-type kvm
+    --virt-type kvm \
+    --dry-run \
+    --print-xml
 
 
 # <vcpu placement='static'>16</vcpu>÷
 # <topology sockets='1' dies='1' cores='8' threads='2'/>
-#     <cache mode='passthrough'/>
 
     # <hostdev mode='subsystem' type='usb' managed='yes'>
     #   <source>
