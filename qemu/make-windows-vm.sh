@@ -12,6 +12,7 @@ fi
 
 # Set defaults for the VM name, number of CPUs, amount of memory, and disk size
 CPUS=4
+THREADS=2
 MEMORY_MB=8192
 DISK="/dev/nvme1n1"
 TMP_VARS_PATH="/tmp/ovmf_vars.fd"
@@ -25,8 +26,9 @@ while getopts ":hc:d:i:m:n:v:" arg; do
         i) WIN_ISO_PATH=${OPTARG};;
         m) MEMORY_MB=${OPTARG};;
         n) VM_NAME=${OPTARG};;
+        t) THREADS=${OPTARG};;
         v) VIRTIO_ISO_PATH=${OPTARG};;
-        h | *) echo "Usage: $0 [-c cpus] [-d disk (path)] [-i Windows ISO path] [-m memory (MB)] [-n name] [-v Virtio ISO path]"; exit 0;;
+        h | *) echo "Usage: $0 [-c cpus] [-d disk (path)] [-i Windows ISO path] [-m memory (MB)] [-n name] [-t threads per core] [-v Virtio ISO path]"; exit 0;;
     esac
 done
 
@@ -38,14 +40,16 @@ fi
 echo "Copying OVMF_VARS.fd to $TMP_VARS_PATH..."
 cp /usr/share/OVMF/OVMF_VARS.fd $TMP_VARS_PATH
 
-# TODO: Need to specify a topology (vcpu or cpu?), otherwise Windows caps at 2 sockets or something
-# Add Bluetooth hostdev 
+
+# TODO: Add Bluetooth hostdev 
+# There is an implicit VCPU setting of socket * cores * threads (e.g. 1 socket, 4 cores, 2 threads = 8 VCPU)
+# TODO: Check out the nuance/distinction between a VM core, a QEMU thread, and a Intel CPU thread
 virt-install \
     --boot loader=/usr/share/OVMF/OVMF_CODE.fd,loader.readonly=yes,loader.type=pflash,nvram.template=$TMP_VARS_PATH,loader_secure=no \
     --cdrom $WIN_ISO_PATH \
     --connect qemu:///system \
     --controller type=scsi,model=virtio-scsi \
-    --cpu host-passthrough,cache.mode=passthrough \
+    --cpu host-passthrough,cache.mode=passthrough,topology.sockets=1,topology.dies=1,topology.cores=$CPUS,topology.threads=$THREADS \
     --debug \
     --disk $DISK,format=raw,bus=scsi,cache=none,driver.discard=unmap,driver.io=native \
     --disk $VIRTIO_ISO_PATH,device=cdrom,boot.order=2 \
@@ -62,14 +66,9 @@ virt-install \
     --name $VM_NAME \
     --network network=default,model=virtio \
     --osinfo win10 \
-    --vcpus $CPUS \
     --virt-type kvm \
     --dry-run \
     --print-xml
-
-
-# <vcpu placement='static'>16</vcpu>÷
-# <topology sockets='1' dies='1' cores='8' threads='2'/>
 
     # <hostdev mode='subsystem' type='usb' managed='yes'>
     #   <source>
