@@ -40,6 +40,10 @@ function main() {
     ensure_libvirtd
 
     echo
+    echo "Ensure udev is started"
+    ensure_udev
+
+    echo
     echo "Ensure intel_iommu is enabled in grub"
     ensure_grub_iommu
 
@@ -138,6 +142,21 @@ function ensure_libvirtd() {
     rc-update add libvirtd
     rc-service libvirtd restart
     echo "  [changed] Re-started libvirtd service"
+}
+
+# https://wiki.alpinelinux.org/wiki/Eudev#Manually
+function ensure_udev() {
+    rc-update add udev sysinit
+    rc-update add udev-trigger sysinit
+    rc-update add udev-settle sysinit
+    rc-update add udev-postmount default
+
+    rc-service udev restart
+    rc-service udev-trigger restart
+    rc-service udev-settle restart
+    rc-service udev-postmount restart
+
+    echo "  [changed] Re-started udev services"
 }
 
 # Ensure the vfio modules are loaded
@@ -267,6 +286,11 @@ function verify() {
     rc-service libvirtd status
     read -rp "  Is libvirtd started? [y/n]" ok
     ensure_yes_or_warn "$ok" "libvirtd is not started, please ensure the APK is installed and that 'rc-update add libvirtd && rc-service libvirtd start' enables it (see 'ensure_libvirtd')"
+
+    echo
+    rc-service udev status
+    read -rp "  Is udev started? [y/n]" ok
+    ensure_yes_or_warn "$ok" "udev is not started, please ensure the APKs are installed and that the services are installed/started (see 'ensure_udev')"
 
     echo
     dmesg | grep "IOMMU enabled"
