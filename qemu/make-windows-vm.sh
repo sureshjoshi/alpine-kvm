@@ -40,8 +40,6 @@ fi
 echo "Copying OVMF_VARS.fd to $TMP_VARS_PATH..."
 cp /usr/share/OVMF/OVMF_VARS.fd $TMP_VARS_PATH
 
-
-# TODO: Add Bluetooth hostdev 
 # There is an implicit VCPU setting of socket * cores * threads (e.g. 1 socket, 4 cores, 2 threads = 8 VCPU)
 # TODO: Check out the nuance/distinction between a VM core, a QEMU thread, and a Intel CPU thread
 virt-install \
@@ -57,6 +55,7 @@ virt-install \
     --graphics none \
     --hostdev 01:00.0,address.type=pci,address.multifunction=on \
     --hostdev 01:00.1,address.type=pci \
+    --hostdev 0x8087:0x0033,address.type=usb \
     --hvm \
     --input evdev,source.dev=/dev/input/by-id/usb-Microsoft_Wired_Keyboard_600-event-kbd,source.grab=all,source.repeat=on,source.grabToggle=ctrl-ctrl \
     --input evdev,source.dev=/dev/input/by-id/usb-Razer_Razer_DeathAdder_Essential-event-mouse \
@@ -69,14 +68,6 @@ virt-install \
     --virt-type kvm \
     --dry-run \
     --print-xml
-
-    # <hostdev mode='subsystem' type='usb' managed='yes'>
-    #   <source>
-    #     <vendor id='0x8087'/>
-    #     <product id='0x0033'/>
-    #   </source>
-    #   <address type='usb' bus='0' port='1'/>
-    # </hostdev>
 
 #   <qemu:capabilities>
 #     <qemu:del capability='usb-host.hostdevice'/>
