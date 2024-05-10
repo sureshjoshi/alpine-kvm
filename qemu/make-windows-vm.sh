@@ -39,14 +39,13 @@ echo "Copying OVMF_VARS.fd to $TMP_VARS_PATH..."
 cp /usr/share/OVMF/OVMF_VARS.fd $TMP_VARS_PATH
 
 # TODO: Need to specify a topology (vcpu or cpu?), otherwise Windows caps at 2 sockets or something
-# Add cache mode=passthrough
 # Add Bluetooth hostdev 
 virt-install \
     --boot loader=/usr/share/OVMF/OVMF_CODE.fd,loader.readonly=yes,loader.type=pflash,nvram.template=$TMP_VARS_PATH,loader_secure=no \
     --cdrom $WIN_ISO_PATH \
     --connect qemu:///system \
     --controller type=scsi,model=virtio-scsi \
-    --cpu host-passthrough \
+    --cpu host-passthrough,cache.mode=passthrough \
     --debug \
     --disk $DISK,format=raw,bus=scsi,cache=none,driver.discard=unmap,driver.io=native \
     --disk $VIRTIO_ISO_PATH,device=cdrom,boot.order=2 \
