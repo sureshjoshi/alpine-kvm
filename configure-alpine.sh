@@ -113,6 +113,27 @@ function install_apks() {
         wpa_supplicant
 }
 
+function ensure_libvirtd() {
+    rc-update add libvirtd
+    rc-service libvirtd restart
+    echo "  [changed] Re-started libvirtd service"
+}
+
+# https://wiki.alpinelinux.org/wiki/Eudev#Manually
+function ensure_udev() {
+    rc-update add udev sysinit
+    rc-update add udev-trigger sysinit
+    rc-update add udev-settle sysinit
+    rc-update add udev-postmount default
+
+    rc-service udev restart
+    rc-service udev-trigger restart
+    rc-service udev-settle restart
+    rc-service udev-postmount restart
+
+    echo "  [changed] Re-started udev services"
+}
+
 function ensure_grub_iommu() {
     local default_file="/etc/default/grub"
     local boot_file="/boot/grub/grub.cfg"
@@ -136,27 +157,6 @@ function ensure_grub_iommu() {
         echo "  [changed] Re-built grub configuration ($boot_file) to include intel_iommu=on and iommu=pt"
         echo "  ** Please reboot your system to test if the IOMMU settings work **"
     fi
-}
-
-function ensure_libvirtd() {
-    rc-update add libvirtd
-    rc-service libvirtd restart
-    echo "  [changed] Re-started libvirtd service"
-}
-
-# https://wiki.alpinelinux.org/wiki/Eudev#Manually
-function ensure_udev() {
-    rc-update add udev sysinit
-    rc-update add udev-trigger sysinit
-    rc-update add udev-settle sysinit
-    rc-update add udev-postmount default
-
-    rc-service udev restart
-    rc-service udev-trigger restart
-    rc-service udev-settle restart
-    rc-service udev-postmount restart
-
-    echo "  [changed] Re-started udev services"
 }
 
 # Ensure the vfio modules are loaded
