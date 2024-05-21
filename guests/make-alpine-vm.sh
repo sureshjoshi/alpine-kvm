@@ -34,7 +34,7 @@ virt-install \
   --hvm \
   --memory $MEMORY_MB \
   --name $VM_NAME \
-  --osinfo alpinelinux3.9 \
+  --osinfo alpinelinux3.18 \
   --network network=default,model=virtio \
   --vcpus $CPUS \
   --virt-type kvm
