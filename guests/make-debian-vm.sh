@@ -33,7 +33,7 @@ virt-install \
   --location https://debian.osuosl.org/debian/dists/stable/main/installer-amd64/ \
   --memory $MEMORY_MB \
   --name $VM_NAME \
-  --osinfo debian12 \
+  --osinfo debian13 \
   --network network=default,model=virtio \
   --vcpus $CPUS \
   --virt-type kvm

@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# This script is a best-effort attempt to setup Alpine Linux (3.20.1) as a QEMU/KVM host
+# This script is a best-effort attempt to setup Alpine Linux (3.22.0) as a QEMU/KVM host
 # It assumes an Intel CPU (though it could probably be modified for AMD by find/replace "intel_iommu" to "amd_iommu").
 # This is meant to be run on a fresh Alpine Linux (Extended) installation with either 'sys' or 'cryptsys' installations.
 # This script is the "what", and more information about the "why" can be found at https://sureshjoshi.com/development/alpine-kvm-host
@@ -13,7 +13,7 @@ function main() {
 
     echo
     echo "********** DISCLAIMER **********"
-    echo "This script has only been tested on Alpine Linux (Extended) 3.20.1"
+    echo "This script has only been tested on Alpine Linux (Extended) 3.22.0"
     echo "This script should be run on a brand new Alpine 'sys' (or 'cryptsys') installation. Otherwise, your mileage might vary..."
     echo "********** DISCLAIMER **********"
     echo

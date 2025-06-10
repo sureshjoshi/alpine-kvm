@@ -8,7 +8,7 @@ set -e
 CPUS=2
 MEMORY_MB=4096
 DISK_GB=10
-ISO_PATH="alpine-standard-3.20.1-x86_64.iso"
+ISO_PATH="alpine-standard-3.22.0-x86_64.iso"
 
 while getopts ":hc:d:i:m:n:" arg; do
     case $arg in
@@ -34,7 +34,7 @@ virt-install \
   --hvm \
   --memory $MEMORY_MB \
   --name $VM_NAME \
-  --osinfo alpinelinux3.19 \
+  --osinfo alpinelinux3.21 \
   --network network=default,model=virtio \
   --vcpus $CPUS \
   --virt-type kvm
