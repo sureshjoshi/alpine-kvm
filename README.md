@@ -4,7 +4,7 @@ Alpine-based KVM/QEMU host configuration and virt-install scripts
 
 ## Prerequisites
 
-- A fresh install of Alpine Linux 3.22 (Extended) using 'sys' or 'cryptsys'
+- A fresh install of Alpine Linux 3.24 (Extended) using 'sys' or 'cryptsys'
 - Intel CPU
 - Two GPUs (one for passthrough, one for host)
 - A working internet connection
@@ -39,16 +39,17 @@ And these are the installed software versions:
 
 ```bash
 cat /etc/alpine-release 
-# 3.22.0
+# 3.24.2
 
 qemu-system-x86_64 --version
-# QEMU emulator version 10.0.0
+# QEMU emulator version 11.0.3
+# Copyright (c) 2003-2026 Fabrice Bellard and the QEMU Project developers
 
 libvirtd --version
-# libvirtd (libvirt) 11.3.0
+# libvirtd (libvirt) 12.3.0
 
 virt-install --version
-# 5.0.0
+# 5.1.0
 ```
 
 ## Useful Reading

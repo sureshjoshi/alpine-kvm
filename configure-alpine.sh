@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# This script is a best-effort attempt to setup Alpine Linux (3.22.0) as a QEMU/KVM host
+# This script is a best-effort attempt to setup Alpine Linux (3.24.x) as a QEMU/KVM host
 # It assumes an Intel CPU (though it could probably be modified for AMD by find/replace "intel_iommu" to "amd_iommu").
 # This is meant to be run on a fresh Alpine Linux (Extended) installation with either 'sys' or 'cryptsys' installations.
 # This script is the "what", and more information about the "why" can be found at https://sureshjoshi.com/development/alpine-kvm-host
@@ -13,7 +13,7 @@ function main() {
 
     echo
     echo "********** DISCLAIMER **********"
-    echo "This script has only been tested on Alpine Linux (Extended) 3.22.0"
+    echo "This script has only been tested on Alpine Linux (Extended) 3.24.2"
     echo "This script should be run on a brand new Alpine 'sys' (or 'cryptsys') installation. Otherwise, your mileage might vary..."
     echo "********** DISCLAIMER **********"
     echo
@@ -114,24 +114,15 @@ function install_apks() {
 }
 
 function ensure_libvirtd() {
-    rc-update add libvirtd
-    rc-service libvirtd restart
-    echo "  [changed] Re-started libvirtd service"
+    ensure_service_started libvirtd default
 }
 
 # https://wiki.alpinelinux.org/wiki/Eudev#Manually
 function ensure_udev() {
-    rc-update add udev sysinit
-    rc-update add udev-trigger sysinit
-    rc-update add udev-settle sysinit
-    rc-update add udev-postmount default
-
-    rc-service udev restart
-    rc-service udev-trigger restart
-    rc-service udev-settle restart
-    rc-service udev-postmount restart
-
-    echo "  [changed] Re-started udev services"
+    ensure_service_started udev sysinit
+    ensure_service_started udev-trigger sysinit
+    ensure_service_started udev-settle sysinit
+    ensure_service_started udev-postmount default
 }
 
 function ensure_grub_iommu() {
@@ -228,10 +219,16 @@ function ensure_vfio_modprobe() {
     local line1="options vfio-pci ids=$pci_id"
     local line2="options vfio_iommu_type1 allow_unsafe_interrupts=1"
     local line3="softdep igb pre: vfio-pci"
+    local line4="softdep nvidia pre: vfio-pci"
+    local line5="softdep nouveau pre: vfio-pci"
 
     # If the modprobe_file exists, and all of the lines are not in it - back it up, as we're making a new one
     if [ -f $modprobe_file ]; then
-        if ! grep -q "$line1" $modprobe_file || ! grep -q "$line2" $modprobe_file || ! grep -q "$line3" $modprobe_file; then
+        if ! grep -q "$line1" $modprobe_file \
+            || ! grep -q "$line2" $modprobe_file \
+            || ! grep -q "$line3" $modprobe_file \
+            || ! grep -q "$line4" $modprobe_file \
+            || ! grep -q "$line5" $modprobe_file; then
             backup_file $modprobe_file
         else
             echo "  [ok] $modprobe_file already exists with the correct lines"
@@ -243,6 +240,8 @@ function ensure_vfio_modprobe() {
     echo "$line1" > $modprobe_file
     echo "$line2" >> $modprobe_file
     echo "$line3" >> $modprobe_file
+    echo "$line4" >> $modprobe_file
+    echo "$line5" >> $modprobe_file
     echo "  [changed] Added lines containing $pci_id to $modprobe_file"
 }
 
@@ -346,6 +345,27 @@ function ensure_yes_or_warn() {
     esac
 
     echo "  [WARNING] $msg"
+}
+
+# Service name in $1, runlevel in $2
+function ensure_service_started() {
+    local service=$1
+    local runlevel=$2
+
+    if ! rc-service --exists "$service"; then
+        echo "  [ok] $service is not installed; skipping"
+        return 0
+    fi
+
+    rc-update add "$service" "$runlevel"
+
+    if rc-service "$service" status >/dev/null 2>&1; then
+        echo "  [ok] $service is already started"
+        return 0
+    fi
+
+    rc-service "$service" start
+    echo "  [changed] Started $service"
 }
 
 # # From section 2.2 (https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF#Ensuring_that_the_groups_are_valid)
