@@ -1,6 +1,7 @@
 #! /bin/sh
 
-# Creates a Windows virtual machine with GPU passthrough
+# Creates a Windows virtual machine with GPU passthrough.
+# Note: I don't use Windows anymore - so, this file is here for posterity.
 
 set -e
 
@@ -51,7 +52,7 @@ virt-install \
     --debug \
     --disk $DISK,format=raw,bus=scsi,cache=none,driver.discard=unmap,driver.io=native \
     --disk $VIRTIO_ISO_PATH,device=cdrom,boot.order=2 \
-    --features kvm_hidden=on \
+    --features kvm.hidden.state=on \
     --graphics none \
     --hostdev 01:00.0,address.type=pci,address.multifunction=on \
     --hostdev 01:00.1,address.type=pci \

@@ -205,22 +205,28 @@ function ensure_vfio_feature() {
 # Instruct mkinitfs to load the following module and rebuild the kernel ramdisk
 # Requires input to decide which PCI id to passthrough
 # If the file is not exactly as expected, we're deleting it and starting from scratch
+# TODO: Instead of the greps/echo, probably better to just replace a template with the correct IDs
+# TODO: This approach leaves everything else alone - but it's so easy to miss lines when updating
 function ensure_vfio_modprobe() {
     local modprobe_file="/etc/modprobe.d/vfio.conf"
 
     echo "  Listing IOMMU groups:"
     list_iommu_groups
     read -rp "  Enter the PCI device ID you want to passthrough (e.g. 1a2b:3c4d): " pci_id
+    # TODO: Account for multiple IDs (video, audio, disks, etc...)
     if [ ${#pci_id} -ne 9 ]; then
         echo "  PCI ID must be in the format 1a2b:3c4d. Exiting..."
         exit 1
     fi
 
+    # TODO: vfio-pci ids=10de:2504,10de:228e,144d:a80a
     local line1="options vfio-pci ids=$pci_id"
     local line2="options vfio_iommu_type1 allow_unsafe_interrupts=1"
     local line3="softdep igb pre: vfio-pci"
     local line4="softdep nvidia pre: vfio-pci"
     local line5="softdep nouveau pre: vfio-pci"
+    # TODO: softdep nvme pre: vfio-pci # For disk
+    # TODO: softdep snd_hda_intel pre: vfio-pci # For audio
 
     # If the modprobe_file exists, and all of the lines are not in it - back it up, as we're making a new one
     if [ -f $modprobe_file ]; then
